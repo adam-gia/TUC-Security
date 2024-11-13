@@ -13,7 +13,7 @@ This is a malware detection tool created in Python. It performes signature-based
 ## Project Files
 
 - **taskA_create_test_files.py**: Generates 15 test files. These include: 
-    - 5 files with know malware signatures, 
+    - 5 files with known malware signatures, 
     - 5 non-malware files, and 
     - 5 random files.
 - **taskA_2.py**: Compares the md5 and SHA256 hashes of a file against the `malware_signatures.txt` database to identify potential malware. 
@@ -33,7 +33,7 @@ Some hashes are specificaly chosen in order to be tested using the test files of
 
 ## Tool Specification
 
-The tool accespts the following command-line arguements:
+The tool accepts the following command-line arguements:
 - `-d <directory>`: The directory to scan.
 - `-s <signature_file>`: Path to the malware signature database.
 - `-o <output_file>`: File to save a report of infected files.
