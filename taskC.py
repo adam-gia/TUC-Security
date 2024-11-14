@@ -31,24 +31,37 @@ class EventHandler(FileSystemEventHandler):
             detectMalware(file, self.signature_file, self.output_file)
 
 def detectMalware(file, signature_file, output_file):
-    result = taskA_2.checkFile(file, signature_file)
-    if(result['type']):    
-        rtype = result['type']
-        print(f"File type: {rtype}")
+    if not os.path.exists(file):
+        print(f"File {file} does not exist!")
+        return
 
-        if(rtype != "Clean" and rtype != None):
-            taskB.quarantineFile(file, "quarantine", result, output_file)
+    try:
+        result = taskA_2.checkFile(file, signature_file)
+        if(result['type']):    
+            rtype = result['type']
+            print(f"File type: {rtype}")
+
+            if(rtype != "Clean" and rtype != None):
+                taskB.quarantineFile(file, "quarantine", result, output_file)
+    
+    except Exception as e:
+        print(f"Error checking file {file}: {e}")
+
 
 def start_real_time(directory, signature_file, output_file):
+    
     event_handler = EventHandler(signature_file, output_file)
     observer = Observer()
     observer.schedule(event_handler, directory, recursive=True)
-    observer.start()
-    print(f"Monitoring directory {directory}")
-
+    
     try:
+        observer.start()
+        print(f"Monitoring directory {directory}")
+
         while True:
             time.sleep(1)
+    except Exception as e:
+        print(f"Error in observer: {e}")
     finally:
         observer.stop()
         observer.join()
@@ -61,7 +74,12 @@ def main():
     parser.add_argument('-o', '--output-file')
     args = parser.parse_args()
 
-    start_real_time(args.directory ,args.signature_file, args.output_file)
+    if args.output_file:
+        outfile = args.output_file
+    else:
+        outfile = "report.log"
+
+    start_real_time(args.directory ,args.signature_file, outfile)
 
 if __name__ == '__main__':
     main()

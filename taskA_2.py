@@ -2,7 +2,7 @@ import hashlib
 import os
 from datetime import datetime
 
-def checkFile(filename, malware_database):
+def checkFile(filename, malware_database): #Compares file hashes to a malware database
     
     result = {
         'path': filename,
@@ -18,6 +18,7 @@ def checkFile(filename, malware_database):
     md5 = hashlib.md5()
     sha256 = hashlib.sha256()
     
+    #Open file and calculate hashes
     try:
         with open(filename, "rb") as file:
 
@@ -35,59 +36,70 @@ def checkFile(filename, malware_database):
         })
 
     except FileNotFoundError:
-        print("File not found!")
+        print(f"File {filename} not found!")
         return result
     except PermissionError:
-        print("Could not access file!")
+        print(f"Permission error for {filename}!")
         return result
     except IOError as e:
         print(f"I/O Exception: {e}")
         return result
 
-    with open(malware_database, "r") as database:
+    #Open malware database and compare hashes 
+    try:
+        with open(malware_database, "r") as database:
 
-        for line in database:
-            next(database); next(database)  #Skip headers
             for line in database:
-                if line.strip():
-                    parts = line.split(' ')
-                    md5_db = parts[0].strip()
-                    sha256_db = parts[1].strip()
-                    malware_type = parts[2].strip()
-                    date = parts[3].strip()
-                    level = parts[4].strip()
-            
-                    if md5_db == md5_hash and sha256_db == sha256_hash:
-                        #print(f"{malware_type}")
-                        if malware_type != "Clean":
-                            result.update({
-                            'malicious': True,
-                            'type' : malware_type,
-                            'level' : level,
-                            'date' : date
-                            })
-                            return result
-                        else:
-                            result.update({
-                            'type' : malware_type,
-                            'date' : date
-                            })
-                            
-                            return result           
-            
+                next(database); next(database)  #Skip headers
+                for line in database:
+                    if line.strip():
+                        parts = line.split(' ')
+                        md5_db = parts[0].strip()
+                        sha256_db = parts[1].strip()
+                        malware_type = parts[2].strip()
+                        date = parts[3].strip()
+                        level = parts[4].strip()
+                
+                        if md5_db == md5_hash and sha256_db == sha256_hash:
+                            #print(f"{malware_type}")
+                            if malware_type != "Clean":
+                                result.update({
+                                'malicious': True,
+                                'type' : malware_type,
+                                'level' : level,
+                                'date' : date
+                                })
+                                return result
+                            else:
+                                result.update({
+                                'type' : malware_type,
+                                'date' : date
+                                })
+                                
+                                return result           
+    except FileNotFoundError:
+        print(f"File {malware_database} not found!")
+        return result
+    except PermissionError:
+        print(f"Permission error for {malware_database}!")
+        return result
+    except IOError as e:
+        print(f"I/O Exception: {e}")
+        return result
+
     print(f"File {filename} not in database")
     return result
 
 def main():
     
     for i in range(5):
-        result = checkFile("malware"+str(i), "malware_signatures3.txt")
+        result = checkFile("malware"+str(i), "malware_signatures.txt")
         print(f"File: {result['path']} Type: {result['type']}")
     for i in range(5):
-        result = checkFile("notmalware"+str(i), "malware_signatures3.txt")
+        result = checkFile("notmalware"+str(i), "malware_signatures.txt")
         print(f"File: {result['path']} Type: {result['type']}")
     for i in range(5):
-        result = checkFile("random"+str(i), "malware_signatures3.txt")
+        result = checkFile("random"+str(i), "malware_signatures.txt")
         print(f"File: {result['path']} Type: {result['type']}")
 
 

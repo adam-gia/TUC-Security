@@ -11,26 +11,10 @@ class MalwareScanner:
     def __init__(self, signature_file, output_file):
         self.quarantine_dir = "quarantine"
         self.outfile = output_file
+        self.signature_file = signature_file
         os.makedirs(self.quarantine_dir, exist_ok=True)
 
-        #Basic logging setup
-        
-
-    def hash_file(self, path):
-        #Get file hashes
-        h1, h2 = hashlib.md5(), hashlib.sha256()
-        try:
-            with open(path, 'rb') as f:
-                buf = f.read(8192)
-                while buf:
-                    h1.update(buf)
-                    h2.update(buf)
-                    buf = f.read(8192)
-            return h1.hexdigest(), h2.hexdigest()
-        except:
-            return None, None
-
-    def scan(self, directory, signature_file):
+    def scan(self, directory):
         results = []
         
         #Scan all files recursively
@@ -41,13 +25,9 @@ class MalwareScanner:
                 #Skip quarantined files
                 if self.quarantine_dir in path:
                     continue
-
-                #Get file info
-                md5, sha256 = self.hash_file(path)
-                if not md5:
-                    continue
-
-                result = taskA_2.checkFile(path, signature_file)
+                
+                #Use task A script to compare with database
+                result = taskA_2.checkFile(path, self.signature_file) 
 
                 if(result['malicious']):
                     #Quarantine bad files
@@ -85,8 +65,9 @@ def main():
 
     #Run scan and show results
     scanner = MalwareScanner(args.signature_file, outfile)
-    results = scanner.scan(args.directory, args.signature_file)
+    results = scanner.scan(args.directory)
     
+    #Print detected malicious files
     bad = [r for r in results if r['malicious']]
     print(f"\nScanned {len(results)} files")
     print(f"Found {len(bad)} threats")
